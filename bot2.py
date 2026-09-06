@@ -101,6 +101,10 @@ async def on_message(message):
             f"Progress: {current_index}/{len(lines)} lines sent ({percent:.2f}%)"
         )
         return
+    
+    if message.content.strip() == "i!sex"
+        await message.channel.send("iyo")
+        return
 
     if message.content.startswith("i!rep"):
         if not message.mentions: # has to mention soembody
