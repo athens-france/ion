@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
+DICTIONARY_API_KEY = os.getenv("DICTIONARY_API_KEY")
 CHANNEL_ID = 1545071872700317826
 TEXT_FILE = "text.json" # lines
 PROGRESS_FILE = "progress.json" # channel index
@@ -117,45 +118,45 @@ async def on_message(message):
             await message.channel.send("give me a word")
             return
 
-        async def lookup_word(word):
-            url = (
-                f"https://dictionaryapi.com/api/v3/references/collegiate/"
-                f"json/{word}?key={DICTIONARY_API_KEY}"
-            )
+        url = (
+            f"https://dictionaryapi.com/api/v3/references/collegiate/"
+            f"json/{word}?key={DICTIONARY_API_KEY}"
+        )
 
-            try:
-                response = requests.get(url, timeout = 10)
-            
-                if response.status_code != 200:
-                    await message.channel.send("dictionary api didnt work try again later ok")
-                    return
-            
-                data = response.json()
-
-                if not data:
-                    await message.channel.send("is this a real word")
-                    return
-            
-                if isinstance(data[0], str):
-                    await message.channel.send(f"Word not found. Did you mean: {', '.join(data)}?")
-                    return
-            
-                for index, entry in enumerate(data, start=1):
-                    part_of_speech = entry.get("fl", "unknown")
-                    definitions = entry.get("shortdef", [])
-
-                    for definition_index, definition in enumerate(
-                        definitions, start=1
-                    ):
-                        await message.channel.send(
-                            f"{word}: {index}.{definition_index} "
-                            f"[{part_of_speech}] {definition}"
-                        )
-            except requests.exceptions.RequestException as e:
-                await message.channel.send(f"An error occurred while connecting to the API: {e}")
-                return
+        try:
+            response = requests.get(url, timeout = 10)
         
-        await lookup_word(word)
+            if response.status_code != 200:
+                await message.channel.send("dictionary api didnt work try again later ok")
+                return
+            
+            data = response.json()
+
+            if not data:
+                await message.channel.send("is this a real word")
+                return
+            
+            if isinstance(data[0], str):
+                await message.channel.send(f"Word not FUCKING found. Did you mean: {', '.join(data)}?")
+                return
+            
+            reply_lines = [f"**{word}**"]
+            for index, entry in enumerate(data, start=1):
+                part_of_speech = entry.get("fl", "unknown")
+                definitions = entry.get("shortdef", [])
+                for definition_index, definition in enumerate(definitions, start=1):
+                    reply_lines.append(
+                        f"{index}.{definition_index} [{part_of_speech}] {definition}"
+                    )
+
+            reply = "\n".join(reply_lines)
+            if len(reply) > 2000:
+                reply = reply[:1990] + "\n…(truncated)"
+            await message.channel.send(reply)
+
+        except requests.exceptions.RequestException as e:
+            await message.channel.send(f"An error occurred while connecting to the API: {e}")
+            return
 
     if cleaned_content.startswith("i!rep"):
         if not message.mentions: # has to mention soembody
