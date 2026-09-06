@@ -92,21 +92,24 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+
+    cleaned_content = message.content.strip().lower()
+
     if message.author.bot: # ignore messages sent by bots
         return
 
-    if message.content.strip().lower() == "i!progress":
+    if cleaned_content == "i!progress":
         percent = (current_index / len(lines)) * 100
         await message.channel.send(
             f"Progress: {current_index}/{len(lines)} lines sent ({percent:.2f}%)"
         )
         return
     
-    if message.content.strip().lower() == "i!sex":
+    if cleaned_content == "i!sex":
         await message.channel.send("iyo")
         return
 
-    if message.content.lower().startswith("i!rep"):
+    if cleaned_content.startswith("i!rep"):
         if not message.mentions: # has to mention soembody
             await message.channel.send("u have to mention somebody to give rep to, for example `i!rep @ION`")
             return
