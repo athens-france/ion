@@ -1,0 +1,6 @@
+.env
+database.json
+progress.json
+cooldowns.json
+__pycache__/
+*.pyc
