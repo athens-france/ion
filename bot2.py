@@ -1,5 +1,6 @@
 import json
 import discord
+import requests
 from discord.ext import tasks
 import time
 import os
@@ -108,6 +109,53 @@ async def on_message(message):
     if cleaned_content == "i!sex":
         await message.channel.send("iyo")
         return
+
+    if cleaned_content.startswith("i!define "):
+        word = message.content[len("i!define "):].strip()
+
+        if not word:
+            await message.channel.send("give me a word")
+            return
+
+        async def lookup_word(word):
+            url = (
+                f"https://dictionaryapi.com/api/v3/references/collegiate/"
+                f"json/{word}?key={DICTIONARY_API_KEY}"
+            )
+
+            try:
+                response = requests.get(url, timeout = 10)
+            
+                if response.status_code != 200:
+                    await message.channel.send("dictionary api didnt work try again later ok")
+                    return
+            
+                data = response.json()
+
+                if not data:
+                    await message.channel.send("is this a real word")
+                    return
+            
+                if isinstance(data[0], str):
+                    await message.channel.send(f"Word not found. Did you mean: {', '.join(data)}?")
+                    return
+            
+                for index, entry in enumerate(data, start=1):
+                    part_of_speech = entry.get("fl", "unknown")
+                    definitions = entry.get("shortdef", [])
+
+                    for definition_index, definition in enumerate(
+                        definitions, start=1
+                    ):
+                        await message.channel.send(
+                            f"{word}: {index}.{definition_index} "
+                            f"[{part_of_speech}] {definition}"
+                        )
+            except requests.exceptions.RequestException as e:
+                await message.channel.send(f"An error occurred while connecting to the API: {e}")
+                return
+        
+        await lookup_word(word)
 
     if cleaned_content.startswith("i!rep"):
         if not message.mentions: # has to mention soembody
