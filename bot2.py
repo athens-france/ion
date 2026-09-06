@@ -102,7 +102,7 @@ async def on_message(message):
         )
         return
     
-    if message.content.strip() == "i!sex"
+    if message.content.strip() == "i!sex":
         await message.channel.send("iyo")
         return
 
