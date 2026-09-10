@@ -64,23 +64,19 @@ def save_cooldowns(cd):
 current_index = load_progress()
 
 #background task
-@tasks.loop(seconds=30)
+@tasks.loop(seconds=5)
 async def send_line():
     global current_index
 
+    channel = client.get_channel(CHANNEL_ID)
+    line = lines[current_index]
     if current_index >= len(lines):
         print("All lines sent!")
         await channel.send("ION is complete. Initating sex mode")
         send_line.stop()
         return
 
-    channel = client.get_channel(CHANNEL_ID)
-    line = lines[current_index]
-
     await channel.send(line)
-    if current_index % 10 == 0: # every 10 lines or so (yes ik the order is wrong and this should be after current index changes but whatev)
-        await channel.send("all i do is eat my own poop")
-
     current_index += 1
     save_progress(current_index)
 
